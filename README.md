@@ -22,8 +22,8 @@ let muxed = muxApiKeysForModel({
 
 // muxed automatically cycles between the two providers
 let muxed = muxModels({
-  models: [createOpenAI({ apiKey: process.env.OPENAI_API_KEY })('gpt-5.1'),
-           createAnthropic({ apiKey: process.env.ANTHROPIC_API_KEY })('claude-4-5-sonnet')],
+  models: [createOpenAI({ apiKey: OAI_API_KEY })('gpt-5.1'),
+           createAnthropic({ apiKey: ANTHROPIC_API_KEY })('claude-sonnet-4-5')],
   strategy: roundRobinStrategy(),
 });
 
