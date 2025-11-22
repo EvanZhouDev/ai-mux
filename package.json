@@ -1,12 +1,39 @@
 {
   "name": "ai-mux",
   "version": "0.0.1",
-  "description": "Switch smoothly between multiple Vercel AI SDK Model Providers",
+  "description": "Rotate Vercel AI SDK language models with round-robin, random, or custom strategies",
   "license": "ISC",
   "author": "",
   "type": "module",
-  "main": "index.js",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "tsup",
+    "prepublishOnly": "npm run build",
+    "test": "echo \"No tests yet\" && exit 0"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.1",
+    "ai": ">=5.0.0",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3"
+  },
+  "peerDependencies": {
+    "ai": ">=5.0.0"
   }
 }
