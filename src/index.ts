@@ -23,6 +23,7 @@ export type ApiKeyModelMuxOptions = {
 	keys: ReadonlyArray<string>;
 	createModel: (apiKey: string, meta: { index: number }) => LanguageModelV2;
 	strategy?: ModelSelectionStrategy | "roundRobin" | "random";
+	onSelect?: MuxModelsOptions["onSelect"];
 };
 
 const isNamedModel = (value: LanguageModelCandidate): value is NamedModel => {
@@ -203,5 +204,9 @@ export function muxApiKeysForModel(
 	const models = options.keys.map((key, index) =>
 		options.createModel(key, { index })
 	);
-	return muxModels({ models, strategy: options.strategy });
+	return muxModels({
+		models,
+		strategy: options.strategy,
+		onSelect: options.onSelect,
+	});
 }

@@ -1,6 +1,6 @@
 {
   "name": "ai-mux",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "Strategically alternate between various Vercel AI SDK language models",
   "license": "ISC",
   "author": "",
