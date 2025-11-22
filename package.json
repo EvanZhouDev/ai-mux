@@ -1,0 +1,12 @@
+{
+  "name": "ai-mux",
+  "version": "0.0.1",
+  "description": "Switch smoothly between multiple Vercel AI SDK Model Providers",
+  "license": "ISC",
+  "author": "",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}
