@@ -25,8 +25,13 @@ export type ApiKeyModelMuxOptions = {
 	strategy?: ModelSelectionStrategy | "roundRobin" | "random";
 };
 
-const isResolved = (value: LanguageModelCandidate): value is NamedModel =>
-	typeof value === "object" && value !== null && "model" in value;
+const isNamedModel = (value: LanguageModelCandidate): value is NamedModel => {
+	return (
+		typeof value === "object" &&
+		value !== null &&
+		Object.prototype.hasOwnProperty.call(value, "model")
+	);
+};
 
 export const roundRobinStrategy = (): ModelSelectionStrategy => {
 	let cursor = 0;
@@ -57,26 +62,24 @@ export function muxModels(options: MuxModelsOptions): LanguageModelV2 {
 	}
 
 	const entries: NamedModel[] = rawModels.map((entry) =>
-		isResolved(entry) ? entry : { model: entry }
+		isNamedModel(entry) ? entry : { model: entry }
 	);
 	const models = entries.map((entry) => entry.model);
 
-	const pick =
-		rawStrategy === "random"
-			? randomStrategy()
-			: rawStrategy === "roundRobin" || rawStrategy === undefined
-			? roundRobinStrategy()
-			: rawStrategy;
+	let pick: ModelSelectionStrategy;
+	if (rawStrategy === "random") pick = randomStrategy();
+	else if (rawStrategy === "roundRobin" || rawStrategy === undefined)
+		pick = roundRobinStrategy();
+	else pick = rawStrategy;
 
 	let attempt = 0;
 	let lastIndex: number | null = null;
 
 	const choose = () => {
 		const choice = pick({ models: entries, attempt: attempt++, lastIndex });
+		const numericChoice = Number.isFinite(choice) ? Math.trunc(choice) : 0;
 		const safeIndex =
-			(((Number.isFinite(choice) ? Math.trunc(choice) : 0) % models.length) +
-				models.length) %
-			models.length;
+			((numericChoice % models.length) + models.length) % models.length;
 		lastIndex = safeIndex;
 		const selection = entries[safeIndex];
 		onSelect?.({ index: safeIndex, name: selection.name, model: selection.model });
@@ -84,21 +87,33 @@ export function muxModels(options: MuxModelsOptions): LanguageModelV2 {
 	};
 
 	const supportedUrls = (async () => {
-		const merged: Record<string, RegExp[]> = {};
-		for (const entry of entries) {
-			const supported = await entry.model.supportedUrls;
-			for (const mediaType of Object.keys(supported)) {
-				const list = merged[mediaType] ?? (merged[mediaType] = []);
-				for (const pattern of supported[mediaType]) {
-					if (
-						!list.some((existing) => existing.toString() === pattern.toString())
-					) {
-						list.push(pattern);
-					}
+		const allSupported = await Promise.all(
+			entries.map((entry) => entry.model.supportedUrls)
+		);
+		if (allSupported.length === 0) return {};
+
+		const result: Record<string, RegExp[]> = {};
+		const first = allSupported[0];
+
+		for (const [mediaType, patterns] of Object.entries(first)) {
+			const patternMap = new Map(patterns.map((p) => [p.toString(), p]));
+
+			for (let i = 1; i < allSupported.length && patternMap.size > 0; i++) {
+				const currentSet = new Set(
+					(allSupported[i][mediaType] ?? []).map((p) => p.toString())
+				);
+
+				for (const key of Array.from(patternMap.keys())) {
+					if (!currentSet.has(key)) patternMap.delete(key);
 				}
 			}
+
+			if (patternMap.size > 0) {
+				result[mediaType] = Array.from(patternMap.values());
+			}
 		}
-		return merged;
+
+		return result;
 	})();
 
 	const addMuxMetadata = (
