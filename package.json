@@ -1,7 +1,7 @@
 {
   "name": "ai-mux",
   "version": "0.0.1",
-  "description": "Rotate Vercel AI SDK language models with round-robin, random, or custom strategies",
+  "description": "Strategically alternate between various Vercel AI SDK language models",
   "license": "ISC",
   "author": "",
   "type": "module",

@@ -1,6 +1,6 @@
 # ai-mux
 
-Rotate your Vercel AI SDK **language models** with round-robin, random, or your own picker.
+Strategically alternate between various Vercel AI SDK language models
 
 ```bash
 npm install ai-mux ai
@@ -17,7 +17,7 @@ import { createAnthropic } from '@ai-sdk/anthropic';
 const muxed = muxModels({
   models: [createOpenAI({ apiKey: process.env.OPENAI_API_KEY })('gpt-5.1'),
            createAnthropic({ apiKey: process.env.ANTHROPIC_API_KEY })('claude-4-5-sonnet')],
-  strategy: roundRobinStrategy(), // now starts at a random model, then cycles
+  strategy: roundRobinStrategy(),
 });
 
 const { text } = await generateText({ model: muxed, prompt: 'hello there' });
@@ -29,7 +29,7 @@ const { text } = await generateText({ model: muxed, prompt: 'hello there' });
 import { muxApiKeysForModel } from 'ai-mux';
 import { createOpenAI } from '@ai-sdk/openai';
 
-const model = muxApiKeysForModel({
+const muxed = muxApiKeysForModel({
   keys: [process.env.OPENAI_KEY_1!, process.env.OPENAI_KEY_2!],
   createModel: (apiKey) => createOpenAI({ apiKey })('gpt-5.1'),
 });
